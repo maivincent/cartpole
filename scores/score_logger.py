@@ -13,9 +13,9 @@ import numpy as np
 class ScoreLogger:
 
     def __init__(self, env_name, iteration):
-        self.SCORES_CSV_PATH = "./scores/scores.csv"
-        self.MEANS_CSV_PATH = "./scores/means.csv"
-        self.SCORES_PNG_PATH = "./scores/scores.png"
+        self.SCORES_CSV_PATH = "./scores/scores_" + str(iteration) + ".csv"
+        self.MEANS_CSV_PATH = "./scores/means_" + str(iteration) + ".csv"
+        self.SCORES_PNG_PATH = "./scores/scores_" + str(iteration) + ".png"
         self.SOLVED_CSV_PATH = "./scores/solved.csv"
         self.SOLVED_PNG_PATH = "./scores/solved.png"
         self.AVERAGE_SCORE_TO_SOLVE = 195
@@ -58,7 +58,7 @@ class ScoreLogger:
                        means_input_path = self.MEANS_CSV_PATH)       
 
    
-
+        ## Check if solved condition is achieved.
         if mean_score >= self.AVERAGE_SCORE_TO_SOLVE and len(self.scores) >= self.CONSECUTIVE_RUNS_TO_SOLVE:
             solve_score = run-self.CONSECUTIVE_RUNS_TO_SOLVE
             print("Solved in " + str(solve_score) + " runs, " + str(run) + " total runs.")
@@ -71,7 +71,9 @@ class ScoreLogger:
                            show_goal=False,
                            show_trend=False,
                            show_legend=False)
-            exit()
+            return True
+
+        return False
 
     def _save_png(self, input_path, output_path, x_label, y_label, average_of_n_last, show_goal, show_trend, show_legend, show_means = False, means_input_path = None):
         x = []

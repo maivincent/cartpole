@@ -9,7 +9,7 @@ from keras.optimizers import Adam
 
 from scores.score_logger import ScoreLogger
 
-class Params:
+class DefaultParams:
     def __init__(self):
         self.ENV_NAME = "CartPole-v1"
         self.GAMMA = 0.95
@@ -62,15 +62,17 @@ class DQNSolver:
         self.exploration_rate = max(self.params.EXPLORATION_MIN, self.exploration_rate)
 
 
-def cartpole(iteration = 0):
-    params = Params()
+def cartpole(iteration = 0, params = None):
+    if params is None:
+        params = DefaultParams()
     env = gym.make(params.ENV_NAME)
     score_logger = ScoreLogger(params.ENV_NAME, iteration)
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
     dqn_solver = DQNSolver(observation_space, action_space, params)
     run = 0
-    while True:
+    done = False
+    while done == False:
         run += 1
         state = env.reset()
         state = np.reshape(state, [1, observation_space])
@@ -86,7 +88,7 @@ def cartpole(iteration = 0):
             state = state_next
             if terminal:
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step))
-                score_logger.add_score(step, run)
+                done = score_logger.add_score(step, run)
                 break
             dqn_solver.experience_replay()
 
