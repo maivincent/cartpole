@@ -8,6 +8,7 @@ import csv
 import numpy as np
 
 SCORES_CSV_PATH = "./scores/scores.csv"
+MEANS_CSV_PATH = "./scores/means.csv"
 SCORES_PNG_PATH = "./scores/scores.png"
 SOLVED_CSV_PATH = "./scores/solved.csv"
 SOLVED_PNG_PATH = "./scores/solved.png"
@@ -19,15 +20,29 @@ class ScoreLogger:
 
     def __init__(self, env_name):
         self.scores = deque(maxlen=CONSECUTIVE_RUNS_TO_SOLVE)
+        self.mean_scores = deque(maxlen=CONSECUTIVE_RUNS_TO_SOLVE)
         self.env_name = env_name
 
         if os.path.exists(SCORES_PNG_PATH):
             os.remove(SCORES_PNG_PATH)
         if os.path.exists(SCORES_CSV_PATH):
             os.remove(SCORES_CSV_PATH)
+        if os.path.exists(MEANS_CSV_PATH):
+            os.remove(MEANS_CSV_PATH)
 
     def add_score(self, score, run):
+        self.scores.append(score)
+        if len(self.scores) == 1:
+          mean_score = score
+        else:
+          mean_score = self.mean_scores[-1] + (score-self.mean_scores[-1])/len(self.scores)
+        mean_score = mean(self.scores)
+        self.mean_scores.append(mean_score)
+
+        print("Scores: (min: " + str(min(self.scores)) + ", avg: " + str(mean_score) + ", max: " + str(max(self.scores)) + ")\n")
+
         self._save_csv(SCORES_CSV_PATH, score)
+        self._save_csv(MEANS_CSV_PATH, mean_score)
         self._save_png(input_path=SCORES_CSV_PATH,
                        output_path=SCORES_PNG_PATH,
                        x_label="runs",
@@ -35,10 +50,12 @@ class ScoreLogger:
                        average_of_n_last=CONSECUTIVE_RUNS_TO_SOLVE,
                        show_goal=True,
                        show_trend=True,
-                       show_legend=True)
-        self.scores.append(score)
-        mean_score = mean(self.scores)
-        print("Scores: (min: " + str(min(self.scores)) + ", avg: " + str(mean_score) + ", max: " + str(max(self.scores)) + ")\n")
+                       show_legend=True,
+                       show_means=True,
+                       means_input_path = MEANS_CSV_PATH)       
+
+   
+
         if mean_score >= AVERAGE_SCORE_TO_SOLVE and len(self.scores) >= CONSECUTIVE_RUNS_TO_SOLVE:
             solve_score = run-CONSECUTIVE_RUNS_TO_SOLVE
             print("Solved in " + str(solve_score) + " runs, " + str(run) + " total runs.")
@@ -53,7 +70,7 @@ class ScoreLogger:
                            show_legend=False)
             exit()
 
-    def _save_png(self, input_path, output_path, x_label, y_label, average_of_n_last, show_goal, show_trend, show_legend):
+    def _save_png(self, input_path, output_path, x_label, y_label, average_of_n_last, show_goal, show_trend, show_legend, show_means = False, means_input_path = None):
         x = []
         y = []
         with open(input_path, "r") as scores:
@@ -65,6 +82,17 @@ class ScoreLogger:
 
         plt.subplots()
         plt.plot(x, y, label="score per run")
+
+        if show_means:
+            means = []
+            means_x = []
+            with open(means_input_path, "r") as scores:
+                reader = csv.reader(scores)
+                data = list(reader)
+                for i in range(0, len(data)):
+                    means_x.append(int(i))
+                    means.append(float(data[i][0]))
+            plt.plot(means_x, means, label="mean last 100")
 
         average_range = average_of_n_last if average_of_n_last is not None else len(x)
         plt.plot(x[-average_range:], [np.mean(y[-average_range:])] * len(y[-average_range:]), linestyle="--", label="last " + str(average_range) + " runs average")
