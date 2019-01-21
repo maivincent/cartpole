@@ -9,32 +9,34 @@ from keras.optimizers import Adam
 
 from scores.score_logger import ScoreLogger
 
-ENV_NAME = "CartPole-v1"
+class Params:
+    def __init__(self):
+        self.ENV_NAME = "CartPole-v1"
+        self.GAMMA = 0.95
+        self.LEARNING_RATE = 0.001
 
-GAMMA = 0.95
-LEARNING_RATE = 0.001
+        self.MEMORY_SIZE = 1000000
+        self.BATCH_SIZE = 20
 
-MEMORY_SIZE = 1000000
-BATCH_SIZE = 20
-
-EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.01
-EXPLORATION_DECAY = 0.995
+        self.EXPLORATION_MAX = 1.0
+        self.EXPLORATION_MIN = 0.01
+        self.EXPLORATION_DECAY = 0.995
 
 
 class DQNSolver:
 
-    def __init__(self, observation_space, action_space):
-        self.exploration_rate = EXPLORATION_MAX
+    def __init__(self, observation_space, action_space, params):
+        self.params = params
+        self.exploration_rate = self.params.EXPLORATION_MAX
 
         self.action_space = action_space
-        self.memory = deque(maxlen=MEMORY_SIZE)
+        self.memory = deque(maxlen=self.params.MEMORY_SIZE)
 
         self.model = Sequential()
         self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
         self.model.add(Dense(24, activation="relu"))
         self.model.add(Dense(self.action_space, activation="linear"))
-        self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
+        self.model.compile(loss="mse", optimizer=Adam(lr=self.params.LEARNING_RATE))
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -46,26 +48,27 @@ class DQNSolver:
         return np.argmax(q_values[0])
 
     def experience_replay(self):
-        if len(self.memory) < BATCH_SIZE:
+        if len(self.memory) < self.params.BATCH_SIZE:
             return
-        batch = random.sample(self.memory, BATCH_SIZE)
+        batch = random.sample(self.memory, self.params.BATCH_SIZE)
         for state, action, reward, state_next, terminal in batch:
             q_update = reward
             if not terminal:
-                q_update = (reward + GAMMA * np.amax(self.model.predict(state_next)[0]))
+                q_update = (reward + self.params.GAMMA * np.amax(self.model.predict(state_next)[0]))
             q_values = self.model.predict(state)
             q_values[0][action] = q_update
             self.model.fit(state, q_values, verbose=0)
-        self.exploration_rate *= EXPLORATION_DECAY
-        self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
+        self.exploration_rate *= self.params.EXPLORATION_DECAY
+        self.exploration_rate = max(self.params.EXPLORATION_MIN, self.exploration_rate)
 
 
-def cartpole():
-    env = gym.make(ENV_NAME)
-    score_logger = ScoreLogger(ENV_NAME)
+def cartpole(iteration = 0):
+    params = Params()
+    env = gym.make(params.ENV_NAME)
+    score_logger = ScoreLogger(params.ENV_NAME, iteration)
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
-    dqn_solver = DQNSolver(observation_space, action_space)
+    dqn_solver = DQNSolver(observation_space, action_space, params)
     run = 0
     while True:
         run += 1

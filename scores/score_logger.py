@@ -7,28 +7,31 @@ import os
 import csv
 import numpy as np
 
-SCORES_CSV_PATH = "./scores/scores.csv"
-MEANS_CSV_PATH = "./scores/means.csv"
-SCORES_PNG_PATH = "./scores/scores.png"
-SOLVED_CSV_PATH = "./scores/solved.csv"
-SOLVED_PNG_PATH = "./scores/solved.png"
-AVERAGE_SCORE_TO_SOLVE = 195
-CONSECUTIVE_RUNS_TO_SOLVE = 100
+
 
 
 class ScoreLogger:
 
-    def __init__(self, env_name):
-        self.scores = deque(maxlen=CONSECUTIVE_RUNS_TO_SOLVE)
-        self.mean_scores = deque(maxlen=CONSECUTIVE_RUNS_TO_SOLVE)
-        self.env_name = env_name
+    def __init__(self, env_name, iteration):
+        self.SCORES_CSV_PATH = "./scores/scores.csv"
+        self.MEANS_CSV_PATH = "./scores/means.csv"
+        self.SCORES_PNG_PATH = "./scores/scores.png"
+        self.SOLVED_CSV_PATH = "./scores/solved.csv"
+        self.SOLVED_PNG_PATH = "./scores/solved.png"
+        self.AVERAGE_SCORE_TO_SOLVE = 195
+        self.CONSECUTIVE_RUNS_TO_SOLVE = 100
 
-        if os.path.exists(SCORES_PNG_PATH):
-            os.remove(SCORES_PNG_PATH)
-        if os.path.exists(SCORES_CSV_PATH):
-            os.remove(SCORES_CSV_PATH)
-        if os.path.exists(MEANS_CSV_PATH):
-            os.remove(MEANS_CSV_PATH)
+        self.scores = deque(maxlen=self.CONSECUTIVE_RUNS_TO_SOLVE)
+        self.mean_scores = deque(maxlen=self.CONSECUTIVE_RUNS_TO_SOLVE)
+        self.env_name = env_name
+        self.iteration = iteration
+
+        if os.path.exists(self.SCORES_PNG_PATH):
+            os.remove(self.SCORES_PNG_PATH)
+        if os.path.exists(self.SCORES_CSV_PATH):
+            os.remove(self.SCORES_CSV_PATH)
+        if os.path.exists(self.MEANS_CSV_PATH):
+            os.remove(self.MEANS_CSV_PATH)
 
     def add_score(self, score, run):
         self.scores.append(score)
@@ -41,27 +44,27 @@ class ScoreLogger:
 
         print("Scores: (min: " + str(min(self.scores)) + ", avg: " + str(mean_score) + ", max: " + str(max(self.scores)) + ")\n")
 
-        self._save_csv(SCORES_CSV_PATH, score)
-        self._save_csv(MEANS_CSV_PATH, mean_score)
-        self._save_png(input_path=SCORES_CSV_PATH,
-                       output_path=SCORES_PNG_PATH,
+        self._save_csv(self.SCORES_CSV_PATH, score)
+        self._save_csv(self.MEANS_CSV_PATH, mean_score)
+        self._save_png(input_path=self.SCORES_CSV_PATH,
+                       output_path=self.SCORES_PNG_PATH,
                        x_label="runs",
                        y_label="scores",
-                       average_of_n_last=CONSECUTIVE_RUNS_TO_SOLVE,
+                       average_of_n_last=self.CONSECUTIVE_RUNS_TO_SOLVE,
                        show_goal=True,
                        show_trend=True,
                        show_legend=True,
                        show_means=True,
-                       means_input_path = MEANS_CSV_PATH)       
+                       means_input_path = self.MEANS_CSV_PATH)       
 
    
 
-        if mean_score >= AVERAGE_SCORE_TO_SOLVE and len(self.scores) >= CONSECUTIVE_RUNS_TO_SOLVE:
-            solve_score = run-CONSECUTIVE_RUNS_TO_SOLVE
+        if mean_score >= self.AVERAGE_SCORE_TO_SOLVE and len(self.scores) >= self.CONSECUTIVE_RUNS_TO_SOLVE:
+            solve_score = run-self.CONSECUTIVE_RUNS_TO_SOLVE
             print("Solved in " + str(solve_score) + " runs, " + str(run) + " total runs.")
-            self._save_csv(SOLVED_CSV_PATH, solve_score)
-            self._save_png(input_path=SOLVED_CSV_PATH,
-                           output_path=SOLVED_PNG_PATH,
+            self._save_csv(self.SOLVED_CSV_PATH, solve_score)
+            self._save_png(input_path=self.SOLVED_CSV_PATH,
+                           output_path=self.SOLVED_PNG_PATH,
                            x_label="trials",
                            y_label="steps before solve",
                            average_of_n_last=None,
@@ -98,7 +101,7 @@ class ScoreLogger:
         plt.plot(x[-average_range:], [np.mean(y[-average_range:])] * len(y[-average_range:]), linestyle="--", label="last " + str(average_range) + " runs average")
 
         if show_goal:
-            plt.plot(x, [AVERAGE_SCORE_TO_SOLVE] * len(x), linestyle=":", label=str(AVERAGE_SCORE_TO_SOLVE) + " score average goal")
+            plt.plot(x, [self.AVERAGE_SCORE_TO_SOLVE] * len(x), linestyle=":", label=str(self.AVERAGE_SCORE_TO_SOLVE) + " score average goal")
 
         if show_trend and len(x) > 1:
             trend_x = x[1:]
