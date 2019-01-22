@@ -35,14 +35,10 @@ class ScoreLogger:
 
     def add_score(self, score, run):
         self.scores.append(score)
-        if len(self.scores) == 1:
-          mean_score = score
-        else:
-          mean_score = self.mean_scores[-1] + (score-self.mean_scores[-1])/len(self.scores)
         mean_score = mean(self.scores)
         self.mean_scores.append(mean_score)
 
-        print("Scores: (min: " + str(min(self.scores)) + ", avg: " + str(mean_score) + ", max: " + str(max(self.scores)) + ")\n")
+        print(" Scores: (min: " + str(min(self.scores)) + ", avg: " + str(mean_score) + ", max: " + str(max(self.scores)) + ")")
 
         self._save_csv(self.SCORES_CSV_PATH, score)
         self._save_csv(self.MEANS_CSV_PATH, mean_score)
