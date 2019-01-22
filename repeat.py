@@ -1,7 +1,7 @@
 from cartpole import cartpole
 
 
-REPETITIONS = 200
+REPETITIONS = 50
 
 class Params:
     def __init__(self):
