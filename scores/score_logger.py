@@ -12,12 +12,13 @@ import numpy as np
 
 class ScoreLogger:
 
-    def __init__(self, env_name, iteration):
-        self.SCORES_CSV_PATH = "./scores/scores_" + str(iteration) + ".csv"
-        self.MEANS_CSV_PATH = "./scores/means_" + str(iteration) + ".csv"
-        self.SCORES_PNG_PATH = "./scores/scores_" + str(iteration) + ".png"
-        self.SOLVED_CSV_PATH = "./scores/solved.csv"
-        self.SOLVED_PNG_PATH = "./scores/solved.png"
+    def __init__(self, env_name, iteration, exp_name, fixed_number_runs = False):
+        self.SCORES_CSV_PATH = "./scores" + exp_name+ "/scores_" + str(iteration) + ".csv"
+        self.MEANS_CSV_PATH = "./scores" + exp_name+ "/means_" + str(iteration) + ".csv"
+        self.SCORES_PNG_PATH = "./scores" + exp_name+ "/scores_" + str(iteration) + ".png"
+        self.SOLVED_CSV_PATH = "./scores" + exp_name+ "/solved.csv"
+        self.SOLVED_PNG_PATH = "./scores" + exp_name+ "/solved.png"
+        self.score_directory_path = "./scores" + exp_name
         self.AVERAGE_SCORE_TO_SOLVE = 195
         self.CONSECUTIVE_RUNS_TO_SOLVE = 100
         self.fixed_number_runs = fixed_number_runs
@@ -27,6 +28,15 @@ class ScoreLogger:
         self.mean_scores = deque(maxlen=self.CONSECUTIVE_RUNS_TO_SOLVE)
         self.env_name = env_name
         self.iteration = iteration
+
+        if not os.path.exists(self.score_directory_path):
+            try:  
+                os.mkdir(self.score_directory_path)
+            except OSError:  
+                print ("Creation of the directory %s failed" % self.score_directory_path)
+            else:  
+                print ("Successfully created the directory %s " % self.score_directory_path)
+
 
         if os.path.exists(self.SCORES_PNG_PATH):
             os.remove(self.SCORES_PNG_PATH)

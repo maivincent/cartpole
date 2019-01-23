@@ -1,7 +1,13 @@
 from cartpole import cartpole
+import sys
 
 
 REPETITIONS = 50
+if len(sys.argv) > 1:
+    EXP_NAME = sys.argv[1]
+else:
+    EXP_NAME = "exp_default"
+
 
 class Params:
     def __init__(self):
@@ -18,6 +24,7 @@ class Params:
 
         self.FIXED_NB_RUNS = 500    # If False : iteration will stop when solved. 
                                     # Otherwise, must be a number : iteration will stop when reaching this amount of runs.
+        self.EXP_NAME = "/" + EXP_NAME
 
 def repeat():
     params = Params()
