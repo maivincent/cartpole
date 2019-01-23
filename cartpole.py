@@ -22,6 +22,8 @@ class DefaultParams:
         self.EXPLORATION_MIN = 0.01
         self.EXPLORATION_DECAY = 0.995
 
+        self.FIXED_NB_RUNS = False   # If False : iteration will stop when solved. Otherwise, put a number : iteration will stop when reaching this amount of runs.
+        self.EXP_NAME = ""
 
 class DQNSolver:
 
@@ -66,7 +68,7 @@ def cartpole(iteration = 0, params = None):
     if params is None:
         params = DefaultParams()
     env = gym.make(params.ENV_NAME)
-    score_logger = ScoreLogger(params.ENV_NAME, iteration)
+    score_logger = ScoreLogger(params.ENV_NAME, iteration, params.EXP_NAME, params.FIXED_NB_RUNS)
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
     dqn_solver = DQNSolver(observation_space, action_space, params)

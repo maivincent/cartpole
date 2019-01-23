@@ -20,6 +20,8 @@ class ScoreLogger:
         self.SOLVED_PNG_PATH = "./scores/solved.png"
         self.AVERAGE_SCORE_TO_SOLVE = 195
         self.CONSECUTIVE_RUNS_TO_SOLVE = 100
+        self.fixed_number_runs = fixed_number_runs
+        self.solved = False
 
         self.scores = deque(maxlen=self.CONSECUTIVE_RUNS_TO_SOLVE)
         self.mean_scores = deque(maxlen=self.CONSECUTIVE_RUNS_TO_SOLVE)
@@ -54,8 +56,8 @@ class ScoreLogger:
                        means_input_path = self.MEANS_CSV_PATH)       
 
    
-        ## Check if solved condition is achieved.
-        if mean_score >= self.AVERAGE_SCORE_TO_SOLVE and len(self.scores) >= self.CONSECUTIVE_RUNS_TO_SOLVE:
+        ## Check if solved condition is achieved (only once, because we don't want to save it every time)
+        if not self.solved and mean_score >= self.AVERAGE_SCORE_TO_SOLVE and len(self.scores) >= self.CONSECUTIVE_RUNS_TO_SOLVE:
             solve_score = run-self.CONSECUTIVE_RUNS_TO_SOLVE
             print("Solved in " + str(solve_score) + " runs, " + str(run) + " total runs.")
             self._save_csv(self.SOLVED_CSV_PATH, solve_score)
@@ -67,9 +69,16 @@ class ScoreLogger:
                            show_goal=False,
                            show_trend=False,
                            show_legend=False)
-            return True
+            self.solved = True
 
-        return False
+        ## Depending on wanted end condition (fixed # of iterations or solved problem), decide if done
+        if not self.fixed_number_runs:
+            return self.solved
+        elif run >= self.fixed_number_runs:
+            return True
+        else:
+            return False
+
 
     def _save_png(self, input_path, output_path, x_label, y_label, average_of_n_last, show_goal, show_trend, show_legend, show_means = False, means_input_path = None):
         x = []

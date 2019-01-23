@@ -16,6 +16,8 @@ class Params:
         self.EXPLORATION_MIN = 0.01
         self.EXPLORATION_DECAY = 0.995
 
+        self.FIXED_NB_RUNS = 500    # If False : iteration will stop when solved. 
+                                    # Otherwise, must be a number : iteration will stop when reaching this amount of runs.
 
 def repeat():
     params = Params()
