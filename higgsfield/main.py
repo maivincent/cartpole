@@ -11,12 +11,9 @@ import torch.nn.functional as F
 
 from IPython.display import clear_output
 import matplotlib.pyplot as plt
-#%matplotlib inline
 
 USE_CUDA = torch.cuda.is_available()
 Variable = lambda *args, **kwargs: autograd.Variable(*args, **kwargs).cuda() if USE_CUDA else autograd.Variable(*args, **kwargs)
-
-
 
 from collections import deque
 
@@ -52,11 +49,11 @@ class DQN(nn.Module):
         super(DQN, self).__init__()
         
         self.layers = nn.Sequential(
-            nn.Linear(env.observation_space.shape[0], 128),
+            nn.Linear(num_inputs, 128),
             nn.ReLU(),
             nn.Linear(128, 128),
             nn.ReLU(),
-            nn.Linear(128, env.action_space.n)
+            nn.Linear(128, num_actions)
         )
         
     def forward(self, x):
@@ -66,7 +63,7 @@ class DQN(nn.Module):
         if random.random() > epsilon:
             state   = Variable(torch.FloatTensor(state).unsqueeze(0), volatile=True)
             q_value = self.forward(state)
-            action  = q_value.max(1)[1].data[0]
+            action  = q_value.max(1)[1].item()
         else:
             action = random.randrange(env.action_space.n)
         return action
@@ -143,7 +140,7 @@ for frame_idx in range(1, num_frames + 1):
         
     if len(replay_buffer) > batch_size:
         loss = compute_td_loss(batch_size)
-        losses.append(loss.data[0])
+        losses.append(loss.item())
         
     if frame_idx % 200 == 0:
         plot(frame_idx, all_rewards, losses)
